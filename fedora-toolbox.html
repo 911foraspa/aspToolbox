@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FEDORA//HACK — Toolbox</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0d0b;
+  --surface: #0f120f;
+  --card: #131613;
+  --border: #1f251f;
+  --border2: #2a342a;
+  --green: #39ff6e;
+  --green2: #00c44f;
+  --green3: #1a4a2a;
+  --red: #ff4444;
+  --yellow: #ffd700;
+  --cyan: #00e5ff;
+  --orange: #ff8c00;
+  --muted: #4a5e4a;
+  --text: #c8d8c8;
+  --dim: #2a382a;
+  --glow: rgba(57,255,110,0.12);
+  --glow2: rgba(57,255,110,0.06);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* CRT scanlines */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Vignette */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.5) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.app {
+  position: relative;
+  z-index: 10;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px 60px;
+}
+
+/* ── BOOT SCREEN ── */
+#boot-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.boot-line {
+  font-size: 13px;
+  color: var(--green);
+  opacity: 0;
+  animation: bootFade 0.1s ease forwards;
+  width: 500px;
+  max-width: 90vw;
+}
+
+@keyframes bootFade { to { opacity: 1; } }
+
+/* ── HEADER ── */
+.header {
+  padding: 28px 0 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.logo-block {}
+
+.logo {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--green);
+  text-shadow: 0 0 30px rgba(57,255,110,0.5), 0 0 60px rgba(57,255,110,0.2);
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.logo-sub {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 3px;
+  margin-top: 6px;
+}
+
+.header-stats {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.stat {
+  text-align: right;
+}
+
+.stat-val {
+  font-size: 13px;
+  color: var(--green);
+  font-weight: 700;
+}
+
+.stat-label {
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-label {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-right: 4px;
+}
+
+.filter-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover { color: var(--green); border-color: var(--green); }
+.filter-btn.active { color: var(--green); border-color: var(--green); background: var(--glow2); }
+
+.search-box {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 5px 12px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  outline: none;
+  width: 200px;
+  margin-left: auto;
+  transition: border-color 0.2s;
+}
+
+.search-box:focus { border-color: var(--green); }
+.search-box::placeholder { color: var(--muted); }
+
+/* ── TOOL GRID ── */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 2px;
+}
+
+/* ── TOOL CARD ── */
+.tool-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.tool-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--cat-color, var(--green));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.tool-card:hover { background: var(--surface); border-color: var(--border2); }
+.tool-card:hover::before { opacity: 1; }
+.tool-card.expanded { border-color: var(--cat-color, var(--green)); background: var(--surface); }
+.tool-card.expanded::before { opacity: 1; }
+.tool-card.hidden { display: none; }
+
+.card-header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-icon {
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  background: var(--glow2);
+  border: 1px solid var(--border2);
+}
+
+.card-meta { flex: 1; min-width: 0; }
+
+.card-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-tagline {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.badge {
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+
+.badge-cat { color: var(--cat-color); border-color: var(--cat-color); background: rgba(0,0,0,0.3); }
+.badge-risk-low { color: var(--green2); border-color: var(--green2); background: rgba(0,196,79,0.08); }
+.badge-risk-med { color: var(--yellow); border-color: var(--yellow); background: rgba(255,215,0,0.08); }
+.badge-risk-high { color: var(--red); border-color: var(--red); background: rgba(255,68,68,0.08); }
+
+.expand-arrow {
+  color: var(--muted);
+  font-size: 10px;
+  transition: transform 0.3s;
+  flex-shrink: 0;
+}
+
+.tool-card.expanded .expand-arrow { transform: rotate(180deg); color: var(--cat-color, var(--green)); }
+
+/* ── CARD BODY (expanded) ── */
+.card-body {
+  display: none;
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.tool-card.expanded .card-body { display: block; }
+
+.card-desc {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 12px 0 14px;
+}
+
+/* Install command block */
+.cmd-block {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.cmd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.3);
+}
+
+.cmd-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+
+.copy-btn:hover { color: var(--green); background: var(--glow2); }
+.copy-btn.copied { color: var(--green); }
+
+.cmd-line {
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--green);
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+.cmd-line .prompt { color: var(--muted); user-select: none; }
+.cmd-line .cmd-text { color: var(--green); }
+.cmd-line .cmd-flag { color: var(--cyan); }
+.cmd-line .cmd-arg { color: var(--yellow); }
+.cmd-line .cmd-comment { color: var(--muted); }
+
+/* Usage examples */
+.usage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.usage-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+.usage-desc {
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.usage-cmd {
+  font-size: 11px;
+  color: var(--cyan);
+}
+
+/* ── SECTION HEADERS ── */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 32px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-title-text {
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.section-count {
+  font-size: 10px;
+  color: var(--cat-color, var(--green));
+  border: 1px solid var(--cat-color, var(--green));
+  padding: 1px 6px;
+  border-radius: 3px;
+  opacity: 0.7;
+}
+
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── INSTALL PROGRESS ── */
+.install-bar-wrap {
+  margin-top: 10px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  display: none;
+}
+
+.install-bar {
+  height: 100%;
+  background: var(--green);
+  width: 0%;
+  transition: width 2s ease;
+  box-shadow: 0 0 8px var(--green);
+}
+
+.tool-card.installing .install-bar-wrap { display: block; }
+.tool-card.installing .install-bar { width: 100%; }
+
+/* ── TERMINAL MODAL ── */
+#terminal-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+#terminal-modal.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.terminal-window {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  width: 680px;
+  max-width: 95vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.95) translateY(10px);
+  transition: transform 0.3s;
+  box-shadow: 0 0 60px rgba(57,255,110,0.1);
+}
+
+#terminal-modal.open .terminal-window {
+  transform: scale(1) translateY(0);
+}
+
+.terminal-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+.terminal-dot.red { background: #ff5f56; }
+.terminal-dot.yellow { background: #ffbd2e; }
+.terminal-dot.green { background: #27c93f; }
+
+.terminal-title {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  margin-left: 8px;
+  flex: 1;
+}
+
+.terminal-close {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+
+.terminal-close:hover { color: var(--red); }
+
+.terminal-body {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.terminal-body::-webkit-scrollbar { width: 4px; }
+.terminal-body::-webkit-scrollbar-track { background: var(--bg); }
+.terminal-body::-webkit-scrollbar-thumb { background: var(--border2); }
+
+.t-line { display: flex; gap: 8px; }
+.t-prompt { color: var(--muted); flex-shrink: 0; }
+.t-green { color: var(--green); }
+.t-cyan { color: var(--cyan); }
+.t-yellow { color: var(--yellow); }
+.t-red { color: var(--red); }
+.t-muted { color: var(--muted); }
+.t-white { color: var(--text); }
+
+.t-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 14px;
+  background: var(--green);
+  vertical-align: middle;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── SIDEBAR PROGRESS ── */
+.sidebar {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 50;
+}
+
+.sidebar-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border2);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sidebar-dot.active { background: var(--green); box-shadow: 0 0 6px var(--green); width: 8px; height: 8px; }
+.sidebar-dot:hover { background: var(--muted); }
+
+/* ── BOTTOM BAR ── */
+.bottom-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(11,13,11,0.95);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  padding: 10px 32px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  z-index: 100;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.bottom-stat { color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.bottom-stat span { color: var(--green); }
+.bottom-tip { margin-left: auto; color: var(--muted); font-style: italic; }
+
+/* ── ANIMATIONS ── */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.tool-card { animation: slideIn 0.3s ease backwards; }
+
+/* Category colors */
+[data-cat="network"]    { --cat-color: #00e5ff; }
+[data-cat="osint"]      { --cat-color: #a78bfa; }
+[data-cat="password"]   { --cat-color: #ff6b35; }
+[data-cat="wireless"]   { --cat-color: #39ff6e; }
+[data-cat="pentest"]    { --cat-color: #ff4444; }
+[data-cat="web"]        { --cat-color: #ffd700; }
+[data-cat="forensics"]  { --cat-color: #f06292; }
+[data-cat="system"]     { --cat-color: #80cbc4; }
+
+@media (max-width: 700px) {
+  .tools-grid { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .header-stats { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- BOOT SCREEN -->
+<div id="boot-screen">
+  <div class="boot-line" style="animation-delay:0.1s; color:#555">[ 0.000000] Booting FEDORA//HACK Toolbox v1.0</div>
+  <div class="boot-line" style="animation-delay:0.3s; color:#39ff6e">[ 0.142381] Loading security modules... OK</div>
+  <div class="boot-line" style="animation-delay:0.55s; color:#555">[ 0.283741] Initializing tool database... 16 tools</div>
+  <div class="boot-line" style="animation-delay:0.8s; color:#00e5ff">[ 0.391827] Network interfaces detected</div>
+  <div class="boot-line" style="animation-delay:1.0s; color:#555">[ 0.512938] Fedora 40+ compatibility: CONFIRMED</div>
+  <div class="boot-line" style="animation-delay:1.2s; color:#39ff6e">[ 0.621847] DNF package manager: READY</div>
+  <div class="boot-line" style="animation-delay:1.4s; color:#ffd700">[ 0.784912] Root check: run sudo when required</div>
+  <div class="boot-line" style="animation-delay:1.6s; color:#ff4444">[ 0.891234] DISCLAIMER: Authorized use only</div>
+  <div class="boot-line" style="animation-delay:1.9s; color:#39ff6e; font-weight:700">[ 1.000000] SYSTEM READY ━━━━━━━━━━━━━━━━━━━━━━</div>
+</div>
+
+<!-- TERMINAL MODAL -->
+<div id="terminal-modal" onclick="closeTerminal(event)">
+  <div class="terminal-window">
+    <div class="terminal-bar">
+      <div class="terminal-dot red"></div>
+      <div class="terminal-dot yellow"></div>
+      <div class="terminal-dot green"></div>
+      <span class="terminal-title" id="terminal-title">terminal — bash</span>
+      <button class="terminal-close" onclick="document.getElementById('terminal-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="terminal-body" id="terminal-body"></div>
+  </div>
+</div>
+
+<!-- SIDEBAR DOTS -->
+<div class="sidebar" id="sidebar"></div>
+
+<!-- MAIN APP -->
+<div class="app" id="main-app" style="opacity:0; transition: opacity 0.5s;">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo-block">
+      <div class="logo">FEDORA//HACK</div>
+      <div class="logo-sub">HACKING TOOLBOX // GNOME EDITION</div>
+    </div>
+    <div class="header-stats">
+      <div class="stat">
+        <div class="stat-val" id="stat-total">16</div>
+        <div class="stat-label">Tools</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val">8</div>
+        <div class="stat-label">Kategoriya</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" style="color:var(--cyan)">DNF</div>
+        <div class="stat-label">Paket meneceri</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" style="color:var(--yellow)">40+</div>
+        <div class="stat-label">Fedora versiyası</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <span class="filter-label">Filtr:</span>
+    <button class="filter-btn active" data-filter="all" onclick="filterTools('all')">Hamısı</button>
+    <button class="filter-btn" data-filter="network" onclick="filterTools('network')">Network</button>
+    <button class="filter-btn" data-filter="osint" onclick="filterTools('osint')">OSINT</button>
+    <button class="filter-btn" data-filter="password" onclick="filterTools('password')">Şifrə</button>
+    <button class="filter-btn" data-filter="wireless" onclick="filterTools('wireless')">Wireless</button>
+    <button class="filter-btn" data-filter="pentest" onclick="filterTools('pentest')">Pentest</button>
+    <button class="filter-btn" data-filter="web" onclick="filterTools('web')">Web</button>
+    <button class="filter-btn" data-filter="forensics" onclick="filterTools('forensics')">Forensics</button>
+    <input class="search-box" type="text" placeholder="$ axtar..." oninput="searchTools(this.value)">
+  </div>
+
+  <!-- TOOLS CONTAINER -->
+  <div id="tools-container"></div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <div class="bottom-stat">Göstərilən: <span id="shown-count">16</span></div>
+  <div class="bottom-stat">Klik et → <span>detallar + install</span></div>
+  <div class="bottom-stat" style="color:var(--red)">⚠ <span style="color:var(--red)">Yalnız icazəli sistemlərdə istifadə et</span></div>
+  <div class="bottom-tip">[ klik → genişlət // terminal ikonu → demo ]</div>
+</div>
+
+<script>
+// ── TOOL DATA ──
+const tools = [
+  // NETWORK
+  {
+    id: 'nmap', name: 'Nmap', cat: 'network', icon: '🌐',
+    tagline: 'Network exploration & port scanning',
+    risk: 'med',
+    desc: 'Ən güclü port skaneri. Şəbəkədəki cihazları, açıq portları, xidmətləri və OS-ləri aşkarlayır. Recon-un əsası.',
+    install: [
+      { label: 'INSTALL', cmd: 'sudo dnf install -y nmap' }
+    ],
+    usage: [
+      { desc: 'Bütün portları tez skan et', cmd: 'nmap -T4 -F 192.168.1.0/24' },
+      { desc: 'OS + xidmət versiyası aşkarla', cmd: 'nmap -sV -O 192.168.1.1' },
+      { desc: 'Gizli SYN skan', cmd: 'sudo nmap -sS -p- 192.168.1.1' },
+      { desc: 'NSE skriptlərlə vulnerability scan', cmd: 'nmap --script vuln 192.168.1.1' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'nmap -sV -T4 192.168.1.1' },
+      { t: 'muted', text: 'Starting Nmap 7.94 ( https://nmap.org )' },
+      { t: 'muted', text: 'Nmap scan report for 192.168.1.1' },
+      { t: 'cyan', text: 'PORT     STATE  SERVICE   VERSION' },
+      { t: 'green', text: '22/tcp   open   ssh       OpenSSH 8.9' },
+      { t: 'green', text: '80/tcp   open   http      nginx 1.24.0' },
+      { t: 'yellow', text: '443/tcp  open   https     nginx 1.24.0' },
+      { t: 'muted', text: '3306/tcp closed mysql' },
+      { t: 'cyan', text: 'Nmap done: 1 IP address (1 host up) scanned' },
+    ]
+  },
+  {
+    id: 'netdiscover', name: 'Netdiscover', cat: 'network', icon: '📡',
+    tagline: 'ARP-based network scanner',
+    risk: 'low',
+    desc: 'LAN-dakı bütün aktiv cihazları ARP protokolu ilə tapır. Router, IoT, kompüterlər — hamısını görür.',
+    install: [
+      { label: 'INSTALL', cmd: 'sudo dnf install -y netdiscover' }
+    ],
+    usage: [
+      { desc: 'LAN-ı avtomatik skan et', cmd: 'sudo netdiscover -r 192.168.1.0/24' },
+      { desc: 'Passiv dinləmə modu', cmd: 'sudo netdiscover -p' },
+      { desc: 'Xüsusi interfeysdə skan', cmd: 'sudo netdiscover -i wlan0 -r 10.0.0.0/24' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'sudo netdiscover -r 192.168.1.0/24' },
+      { t: 'cyan', text: ' IP            MAC              Count  Len   MAC Vendor' },
+      { t: 'muted', text: '─────────────────────────────────────────────────────' },
+      { t: 'green', text: ' 192.168.1.1   aa:bb:cc:11:22:33  1    60   TP-Link Technologies' },
+      { t: 'green', text: ' 192.168.1.5   dd:ee:ff:44:55:66  1    60   Apple Inc.' },
+      { t: 'green', text: ' 192.168.1.10  11:22:33:aa:bb:cc  3   180   Raspberry Pi Foundation' },
+      { t: 'yellow', text: '' },
+      { t: 'muted', text: '3 Captured ARP requests' },
+    ]
+  },
+  {
+    id: 'wireshark', name: 'Wireshark + tshark', cat: 'network', icon: '🦈',
+    tagline: 'Deep packet inspection & analysis',
+    risk: 'med',
+    desc: 'Şəbəkə trafikini paket səviyyəsində analiz edir. GUI (Wireshark) + CLI (tshark) birlikdə gəlir. HTTP, DNS, TCP hər şeyi görürsən.',
+    install: [
+      { label: 'INSTALL', cmd: 'sudo dnf install -y wireshark' },
+      { label: 'QRUP ƏLAVƏ ET (sudo olmadan işlətmək üçün)', cmd: 'sudo usermod -aG wireshark $USER && newgrp wireshark' }
+    ],
+    usage: [
+      { desc: 'CLI ilə canlı tutma', cmd: 'sudo tshark -i eth0 -w capture.pcap' },
+      { desc: 'HTTP sorğularını filtrə et', cmd: 'tshark -r capture.pcap -Y "http.request"' },
+      { desc: 'DNS trafikini izlə', cmd: 'sudo tshark -i any -f "port 53"' },
+      { desc: 'GUI-ni başlat', cmd: 'wireshark &' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'sudo tshark -i eth0 -f "port 80" -c 5' },
+      { t: 'muted', text: 'Capturing on eth0...' },
+      { t: 'cyan', text: '  1  0.000000  192.168.1.5 → 142.250.74.46  HTTP GET /search?q=nmap' },
+      { t: 'cyan', text: '  2  0.034521  142.250.74.46 → 192.168.1.5  HTTP 200 OK' },
+      { t: 'green', text: '  3  0.071234  192.168.1.10 → 8.8.8.8     DNS Standard query A google.com' },
+      { t: 'green', text: '  4  0.089123  8.8.8.8 → 192.168.1.10    DNS Standard query response' },
+      { t: 'cyan', text: '  5  0.123456  192.168.1.5 → 192.168.1.1  TCP SYN' },
+      { t: 'muted', text: '5 packets captured' },
+    ]
+  },
+  {
+    id: 'masscan', name: 'Masscan', cat: 'network', icon: '⚡',
+    tagline: 'Internet-speed port scanner',
+    risk: 'high',
+    desc: 'Dünyanın ən sürətli port skaneri. Nmap-dan 1000x daha sürətli. Bütün internetin portlarını dəqiqələr ərzində skan edə bilər.',
+    install: [
+      { label: 'INSTALL', cmd: 'sudo dnf install -y masscan' }
+    ],
+    usage: [
+      { desc: 'Şəbəkəni sürətlə skan et', cmd: 'sudo masscan 192.168.1.0/24 -p80,443,22 --rate=1000' },
+      { desc: 'Nəticəni saxla', cmd: 'sudo masscan 10.0.0.0/8 -p0-65535 --rate=10000 -oX results.xml' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'sudo masscan 192.168.1.0/24 -p22,80,443 --rate=1000' },
+      { t: 'muted', text: 'Starting masscan 1.3.2 (http://bit.ly/14GZzcT)' },
+      { t: 'muted', text: 'Initiating SYN Stealth Scan' },
+      { t: 'green', text: 'Discovered open port 22/tcp on 192.168.1.1' },
+      { t: 'green', text: 'Discovered open port 80/tcp on 192.168.1.1' },
+      { t: 'green', text: 'Discovered open port 443/tcp on 192.168.1.5' },
+      { t: 'muted', text: '─── masscan done. rate: 1000.00-kpps' },
+    ]
+  },
+
+  // OSINT
+  {
+    id: 'theharvester', name: 'theHarvester', cat: 'osint', icon: '🔍',
+    tagline: 'Email, subdomain & IP recon',
+    risk: 'low',
+    desc: 'Domain haqqında public mənbələrdən məlumat toplar: email ünvanları, subdomain-lər, IP-lər, istifadəçi adları. Passiv recon üçün idealdır.',
+    install: [
+      { label: 'INSTALL (pip)', cmd: 'pip3 install theHarvester --break-system-packages' },
+      { label: 'YA DA DNF', cmd: 'sudo dnf install -y theharvester' }
+    ],
+    usage: [
+      { desc: 'Domain üzrə email topla', cmd: 'theHarvester -d example.com -b google' },
+      { desc: 'Bütün mənbələrdən axtarış', cmd: 'theHarvester -d target.com -b all -l 500' },
+      { desc: 'Nəticəni HTML-ə çıxar', cmd: 'theHarvester -d target.com -b bing -f output.html' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'theHarvester -d example.com -b google' },
+      { t: 'muted', text: '──────────────────────────────────' },
+      { t: 'cyan', text: '  theHarvester 4.4.0' },
+      { t: 'muted', text: '──────────────────────────────────' },
+      { t: 'yellow', text: '[*] Target: example.com' },
+      { t: 'green', text: '[+] Emails found: admin@example.com' },
+      { t: 'green', text: '[+] Emails found: info@example.com' },
+      { t: 'cyan', text: '[+] Hosts: mail.example.com 93.184.216.34' },
+      { t: 'cyan', text: '[+] Hosts: www.example.com  93.184.216.34' },
+    ]
+  },
+  {
+    id: 'exiftool', name: 'ExifTool', cat: 'osint', icon: '🖼',
+    tagline: 'File metadata extractor',
+    risk: 'low',
+    desc: 'Şəkillərdən, sənədlərdən, videolardan gizli metadata oxuyur. GPS koordinatları, kamera modeli, yaradılma tarixi — hər şey.',
+    install: [
+      { label: 'INSTALL', cmd: 'sudo dnf install -y perl-Image-ExifTool' }
+    ],
+    usage: [
+      { desc: 'Bütün metadata-nı gör', cmd: 'exiftool image.jpg' },
+      { desc: 'GPS koordinatlarını çıxar', cmd: 'exiftool -gpslatitude -gpslongitude photo.jpg' },
+      { desc: 'Metadata-nı sil (gizlən)', cmd: 'exiftool -all= image.jpg' },
+      { desc: 'Qovluqdakı bütün fayllar', cmd: 'exiftool /path/to/folder/*.jpg' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'exiftool photo.jpg' },
+      { t: 'cyan', text: 'File Name                : photo.jpg' },
+      { t: 'cyan', text: 'File Size                : 3.2 MB' },
+      { t: 'green', text: 'GPS Latitude             : 40° 24\' 26.54" N' },
+      { t: 'green', text: 'GPS Longitude            : 49° 52\' 0.84" E' },
+      { t: 'yellow', text: 'Make                     : Apple' },
+      { t: 'yellow', text: 'Camera Model Name        : iPhone 15 Pro' },
+      { t: 'muted', text: 'Create Date              : 2024:03:15 14:32:11' },
+    ]
+  },
+  {
+    id: 'whatweb', name: 'WhatWeb', cat: 'osint', icon: '🌍',
+    tagline: 'Web technology fingerprinting',
+    risk: 'low',
+    desc: 'Hər hansı bir web saytın texnologiyasını tanıyır: CMS, framework, server, analitika alətləri, plugin-lər. Passiv recon üçün mükəmməl.',
+    install: [
+      { label: 'INSTALL', cmd: 'sudo dnf install -y whatweb' }
+    ],
+    usage: [
+      { desc: 'Saytı analiz et', cmd: 'whatweb https://target.com' },
+      { desc: 'Ətraflı məlumat', cmd: 'whatweb -v https://target.com' },
+      { desc: 'Şəbəkəni skan et', cmd: 'whatweb 192.168.1.0/24' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'whatweb https://example.com' },
+      { t: 'green', text: 'https://example.com [200 OK]' },
+      { t: 'cyan', text: '  Apache[2.4.54]' },
+      { t: 'cyan', text: '  PHP[8.1.12]' },
+      { t: 'yellow', text: '  WordPress[6.3.1]' },
+      { t: 'yellow', text: '  JQuery[3.6.0]' },
+      { t: 'muted', text: '  Google-Analytics[UA-XXXXXXX-1]' },
+      { t: 'green', text: '  Title[My Website]' },
+    ]
+  },
+
+  // PASSWORD
+  {
+    id: 'hashcat', name: 'Hashcat', cat: 'password', icon: '🔐',
+    tagline: 'GPU-accelerated hash cracker',
+    risk: 'high',
+    desc: 'Dünyanın ən sürətli hash qırıcısı. GPU akselerasiyası ilə MD5, SHA1, bcrypt, NTLM və 300+ hash tipi dəstəklənir.',
+    install: [
+      { label: 'INSTALL', cmd: 'sudo dnf install -y hashcat' },
+      { label: 'WORDLIST YÜKLƏYİN', cmd: 'wget https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt' }
+    ],
+    usage: [
+      { desc: 'MD5 dictionary attack', cmd: 'hashcat -m 0 -a 0 hash.txt rockyou.txt' },
+      { desc: 'SHA-256 brute force', cmd: 'hashcat -m 1400 -a 3 hash.txt ?a?a?a?a?a?a' },
+      { desc: 'NTLM (Windows) crack', cmd: 'hashcat -m 1000 -a 0 ntlm.txt rockyou.txt' },
+      { desc: 'Nəticəni göstər', cmd: 'hashcat -m 0 hash.txt --show' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'hashcat -m 0 -a 0 hash.txt rockyou.txt' },
+      { t: 'muted', text: 'hashcat (v6.2.6) starting...' },
+      { t: 'cyan', text: 'OpenCL API (OpenCL 3.0): AMD Radeon' },
+      { t: 'muted', text: '* Device #1: AMD Radeon RX 7900, 16320/16368 MB' },
+      { t: 'yellow', text: 'Dictionary cache built:' },
+      { t: 'muted', text: '* Filename: rockyou.txt, Keyspace: 14344385' },
+      { t: 'green', text: '5f4dcc3b5aa765d61d8327deb882cf99:password' },
+      { t: 'green', text: 'Session..........: hashcat  STATUS: Cracked' },
+    ]
+  },
+  {
+    id: 'john', name: 'John the Ripper', cat: 'password', icon: '🗡',
+    tagline: 'Classic multi-platform password cracker',
+    risk: 'high',
+    desc: 'Klassik şifrə qırıcısı. Linux /etc/shadow, ZIP, PDF, SSH key-lər üçün mükəmməl. Auto-detect hash tipi edir.',
+    install: [
+      { label: 'INSTALL', cmd: 'sudo dnf install -y john' }
+    ],
+    usage: [
+      { desc: 'Shadow faylını qır', cmd: 'john --wordlist=rockyou.txt /etc/shadow' },
+      { desc: 'Zip faylının şifrəsi', cmd: 'zip2john protected.zip > hash.txt && john hash.txt' },
+      { desc: 'Qırılmış şifrələri göstər', cmd: 'john --show /etc/shadow' },
+      { desc: 'SSH key-i qır', cmd: 'ssh2john id_rsa > key.hash && john key.hash' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'john --wordlist=rockyou.txt hash.txt' },
+      { t: 'muted', text: 'Using default input encoding: UTF-8' },
+      { t: 'cyan', text: 'Loaded 3 password hashes with 3 different salts' },
+      { t: 'muted', text: 'Press Ctrl+C to abort, almost any key for status' },
+      { t: 'green', text: 'admin123         (admin)' },
+      { t: 'green', text: 'qwerty           (user1)' },
+      { t: 'yellow', text: '2g 0:00:00:03 DONE — 0.5882g/s' },
+    ]
+  },
+  {
+    id: 'hydra', name: 'Hydra', cat: 'password', icon: '🐉',
+    tagline: 'Fast network login brute-forcer',
+    risk: 'high',
+    desc: 'Şəbəkə xidmətlərinə brute-force hücumları üçün. SSH, FTP, HTTP, RDP, MySQL 50+ protokol dəstəklənir.',
+    install: [
+      { label: 'INSTALL', cmd: 'sudo dnf install -y hydra' }
+    ],
+    usage: [
+      { desc: 'SSH brute force', cmd: 'hydra -l admin -P rockyou.txt ssh://192.168.1.1' },
+      { desc: 'HTTP form login', cmd: 'hydra -l admin -P rockyou.txt 192.168.1.1 http-post-form "/login:user=^USER^&pass=^PASS^:Invalid"' },
+      { desc: 'FTP skan', cmd: 'hydra -l root -P passwords.txt ftp://192.168.1.1' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'hydra -l admin -P rockyou.txt ssh://192.168.1.100' },
+      { t: 'muted', text: 'Hydra v9.5 starting at 2024-01-01 12:00:00' },
+      { t: 'cyan', text: '[DATA] attacking ssh://192.168.1.100:22/' },
+      { t: 'muted', text: '[STATUS] 200.00 tries/min, 200 tries in 00:01h' },
+      { t: 'green', text: '[22][ssh] host: 192.168.1.100  login: admin  password: admin123' },
+      { t: 'yellow', text: '1 of 1 target successfully completed' },
+    ]
+  },
+
+  // WIRELESS
+  {
+    id: 'aircrack', name: 'Aircrack-ng', cat: 'wireless', icon: '📶',
+    tagline: 'Complete WiFi security auditing suite',
+    risk: 'high',
+    desc: 'WiFi şəbəkələrinin təhlükəsizliyini test edir. WEP/WPA/WPA2 handshake tutursan, analiz edirsən. Monitor mode lazımdır.',
+    install: [
+      { label: 'INSTALL', cmd: 'sudo dnf install -y aircrack-ng' }
+    ],
+    usage: [
+      { desc: 'Monitor mode-u aktiv et', cmd: 'sudo airmon-ng start wlan0' },
+      { desc: 'Yaxınlıqdaki şəbəkələri gör', cmd: 'sudo airodump-ng wlan0mon' },
+      { desc: 'Hədəfi skan et + handshake tut', cmd: 'sudo airodump-ng -c 6 --bssid AA:BB:CC:DD:EE:FF -w capture wlan0mon' },
+      { desc: 'Handshake-i qır', cmd: 'aircrack-ng -w rockyou.txt capture-01.cap' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'sudo airmon-ng start wlan0' },
+      { t: 'yellow', text: 'PHY     Interface    Driver       Chipset' },
+      { t: 'cyan', text: 'phy0    wlan0        ath9k        Atheros AR9271' },
+      { t: 'green', text: '' },
+      { t: 'green', text: '(mac80211 monitor mode vif enabled for phy0 on wlan0mon)' },
+      { t: 'muted', text: 'wlan0mon interface created' },
+      { t: 'yellow', text: 'Run airodump-ng wlan0mon to proceed' },
+    ]
+  },
+  {
+    id: 'kismet', name: 'Kismet', cat: 'wireless', icon: '🛸',
+    tagline: 'Wireless network detector & sniffer',
+    risk: 'med',
+    desc: 'Passiv wireless monitoring sistemi. Görünməz WiFi şəbəkələri, Bluetooth cihazları, zigbee siqnallarını tapır. Web UI ilə gəlir.',
+    install: [
+      { label: 'REPO ƏLAVƏ ET', cmd: 'sudo dnf config-manager --add-repo https://www.kismetwireless.net/repos/rpm/fedora/kismet.repo' },
+      { label: 'INSTALL', cmd: 'sudo dnf install -y kismet' }
+    ],
+    usage: [
+      { desc: 'Web UI ilə başlat', cmd: 'sudo kismet -c wlan0 --no-ncurses' },
+      { desc: 'Sonra brauzerə get', cmd: 'firefox http://localhost:2501' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'sudo kismet -c wlan0' },
+      { t: 'muted', text: 'INFO: Starting Kismet server...' },
+      { t: 'cyan', text: 'INFO: Kismet 2023-07-R1' },
+      { t: 'green', text: 'INFO: Logging to /home/user/Kismet-*.kismet' },
+      { t: 'yellow', text: 'INFO: Found new 802.11 access point "HomeNetwork"' },
+      { t: 'yellow', text: 'INFO: Found new 802.11 access point "HiddenAP" (hidden SSID)' },
+      { t: 'cyan', text: 'INFO: Web UI: http://localhost:2501' },
+    ]
+  },
+
+  // PENTEST
+  {
+    id: 'metasploit', name: 'Metasploit Framework', cat: 'pentest', icon: '💀',
+    tagline: 'The world\'s most used penetration testing framework',
+    risk: 'high',
+    desc: 'Pentest-in əfsanəsi. 2000+ exploit, payload generasiyası, post-exploitation hər şey var. msfconsole ilə işlənir.',
+    install: [
+      { label: 'INSTALL SCRIPT', cmd: 'curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb > msfinstall && chmod 755 msfinstall && ./msfinstall' },
+      { label: 'YA DA SNAP', cmd: 'sudo dnf install -y snapd && sudo snap install metasploit-framework' }
+    ],
+    usage: [
+      { desc: 'Konsolu başlat', cmd: 'msfconsole' },
+      { desc: 'Exploit axtar', cmd: 'search type:exploit platform:linux' },
+      { desc: 'Modul seç', cmd: 'use exploit/multi/handler' },
+      { desc: 'Seçenəkləri gör', cmd: 'show options' },
+    ],
+    demo: [
+      { t: 'red', text: '       =[ metasploit v6.3.44 ]==' },
+      { t: 'muted', text: '+ -- --=[ 2373 exploits - 1228 auxiliary ]' },
+      { t: 'muted', text: '+ -- --=[ 1163 payloads - 46 encoders ]' },
+      { t: 'green', prompt: 'msf6 >', text: 'search eternalblue' },
+      { t: 'cyan', text: '  #  Name                              Rank' },
+      { t: 'yellow', text: '  0  exploit/windows/smb/ms17_010_eternalblue  excellent' },
+      { t: 'green', prompt: 'msf6 >', text: 'use 0' },
+      { t: 'green', prompt: 'msf6 exploit(ms17_010) >', text: '' },
+    ]
+  },
+  {
+    id: 'gobuster', name: 'Gobuster', cat: 'web', icon: '🚪',
+    tagline: 'Directory & DNS brute-force tool',
+    risk: 'med',
+    desc: 'Web serverlərdə gizli qovluqları, faylları, subdomain-ləri tapır. Goroutine-lar ilə inanılmaz sürət.',
+    install: [
+      { label: 'INSTALL', cmd: 'sudo dnf install -y gobuster' },
+      { label: 'WORDLIST YÜKLƏYİN', cmd: 'sudo dnf install -y seclists' }
+    ],
+    usage: [
+      { desc: 'Gizli qovluq tап', cmd: 'gobuster dir -u https://target.com -w /usr/share/seclists/Discovery/Web-Content/common.txt' },
+      { desc: 'Subdomain axtarışı', cmd: 'gobuster dns -d target.com -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt' },
+      { desc: 'PHP faylları axtar', cmd: 'gobuster dir -u https://target.com -w wordlist.txt -x php,html,js' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'gobuster dir -u https://example.com -w common.txt' },
+      { t: 'muted', text: 'Gobuster v3.6 starting...' },
+      { t: 'muted', text: '===============================================================' },
+      { t: 'green', text: '/admin                (Status: 301) [Size: 234]' },
+      { t: 'green', text: '/login                (Status: 200) [Size: 4521]' },
+      { t: 'cyan', text: '/api                  (Status: 200) [Size: 1234]' },
+      { t: 'yellow', text: '/backup               (Status: 403) [Size: 289]' },
+      { t: 'muted', text: 'Progress: 4614/4614 (100%%) — Done' },
+    ]
+  },
+  {
+    id: 'burpsuite', name: 'Burp Suite Community', cat: 'web', icon: '🕷',
+    tagline: 'Web application security testing platform',
+    risk: 'med',
+    desc: 'Web app pentest-nin əsas silahı. HTTP proxy, interceptor, repeater, intruder — hər şey bir yerdə. Community versiyası pulsuzdur.',
+    install: [
+      { label: 'FLATPAK (tövsiyə edilir)', cmd: 'flatpak install flathub net.portswigger.BurpSuite' },
+      { label: 'YA DA MANUAL', cmd: 'wget "https://portswigger.net/burp/releases/download?product=community&type=Linux" -O burpsuite.sh && chmod +x burpsuite.sh && ./burpsuite.sh' }
+    ],
+    usage: [
+      { desc: 'Flatpak ilə başlat', cmd: 'flatpak run net.portswigger.BurpSuite' },
+      { desc: 'Proxy: Firefox → 127.0.0.1:8080', cmd: '# Settings → Network → Manual proxy → 127.0.0.1:8080' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'flatpak run net.portswigger.BurpSuite' },
+      { t: 'muted', text: 'Loading Burp Suite Community Edition...' },
+      { t: 'cyan', text: 'Proxy listener: 127.0.0.1:8080' },
+      { t: 'yellow', text: 'Intercepted request:' },
+      { t: 'green', text: 'POST /login HTTP/1.1' },
+      { t: 'green', text: 'Host: target.com' },
+      { t: 'cyan', text: 'username=admin&password=test123' },
+      { t: 'muted', text: '[Intercept ON — Forward / Drop / Send to Repeater]' },
+    ]
+  },
+
+  // FORENSICS
+  {
+    id: 'volatility', name: 'Volatility3', cat: 'forensics', icon: '🧠',
+    tagline: 'Memory forensics framework',
+    risk: 'low',
+    desc: 'RAM dump-larını analiz edir. Proses siyahısı, şəbəkə bağlantıları, gizli malware-lar, şifrələnmiş məlumatlar — hamısı görünür.',
+    install: [
+      { label: 'INSTALL PIP', cmd: 'pip3 install volatility3 --break-system-packages' },
+      { label: 'YA DA GIT', cmd: 'git clone https://github.com/volatilityfoundation/volatility3.git && cd volatility3 && pip3 install -r requirements.txt --break-system-packages' }
+    ],
+    usage: [
+      { desc: 'Proses siyahısı', cmd: 'python3 vol.py -f memory.dmp windows.pslist' },
+      { desc: 'Şəbəkə bağlantıları', cmd: 'python3 vol.py -f memory.dmp windows.netstat' },
+      { desc: 'Faylları çıxar', cmd: 'python3 vol.py -f memory.dmp windows.dumpfiles' },
+      { desc: 'Hashlari al', cmd: 'python3 vol.py -f memory.dmp windows.hashdump' },
+    ],
+    demo: [
+      { t: 'green', prompt: 'user@fedora ~$', text: 'python3 vol.py -f memory.dmp windows.pslist' },
+      { t: 'cyan', text: 'PID   PPID  Name               Offset' },
+      { t: 'muted', text: '────────────────────────────────────────' },
+      { t: 'green', text: '4     0     System             0xe00000' },
+      { t: 'green', text: '788   4     smss.exe           0x1e0000' },
+      { t: 'yellow', text: '2948  1234  suspicious.exe     0x5f0000  ← ??!' },
+      { t: 'green', text: '1234  788   explorer.exe       0x2d0000' },
+    ]
+  },
+];
+
+// ── CATEGORIES ──
+const catInfo = {
+  network:   { label: 'Network & Kəşfiyyat',  icon: '🌐', color: '#00e5ff' },
+  osint:     { label: 'OSINT & Metadata',      icon: '🔍', color: '#a78bfa' },
+  password:  { label: 'Şifrə & Hash',          icon: '🔐', color: '#ff6b35' },
+  wireless:  { label: 'Wireless',              icon: '📶', color: '#39ff6e' },
+  pentest:   { label: 'Pentest Framework',     icon: '💀', color: '#ff4444' },
+  web:       { label: 'Web Application',       icon: '🌍', color: '#ffd700' },
+  forensics: { label: 'Forensics & Memory',    icon: '🧠', color: '#f06292' },
+  system:    { label: 'Sistem Araçları',        icon: '⚙️',  color: '#80cbc4' },
+};
+
+let currentFilter = 'all';
+let currentSearch = '';
+
+function buildTools() {
+  const container = document.getElementById('tools-container');
+  container.innerHTML = '';
+
+  const catOrder = ['network','osint','password','wireless','pentest','web','forensics'];
+  const sidebar = document.getElementById('sidebar');
+  sidebar.innerHTML = '';
+
+  catOrder.forEach((cat, ci) => {
+    const catTools = tools.filter(t => t.cat === cat);
+    if (catTools.length === 0) return;
+
+    const info = catInfo[cat];
+
+    const secHeader = document.createElement('div');
+    secHeader.className = 'section-header';
+    secHeader.dataset.cat = cat;
+    secHeader.id = 'sec-' + cat;
+    secHeader.style.setProperty('--cat-color', info.color);
+    secHeader.innerHTML = `
+      <span class="section-title-text">${info.icon} ${info.label}</span>
+      <span class="section-count" style="color:${info.color}; border-color:${info.color}">${catTools.length}</span>
+      <div class="section-line"></div>
+    `;
+    container.appendChild(secHeader);
+
+    const grid = document.createElement('div');
+    grid.className = 'tools-grid';
+    grid.id = 'grid-' + cat;
+
+    catTools.forEach((tool, ti) => {
+      const card = document.createElement('div');
+      card.className = 'tool-card';
+      card.id = 'tool-' + tool.id;
+      card.dataset.cat = tool.cat;
+      card.dataset.name = tool.name.toLowerCase();
+      card.style.setProperty('--cat-color', info.color);
+      card.style.animationDelay = (ci * 0.1 + ti * 0.05) + 's';
+
+      const riskBadge = { low: 'badge-risk-low', med: 'badge-risk-med', high: 'badge-risk-high' }[tool.risk];
+      const riskLabel = { low: 'LOW', med: 'MED', high: 'HIGH' }[tool.risk];
+
+      const installHtml = tool.install.map(inst => `
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">${inst.label}</span>
+            <button class="copy-btn" onclick="copyCmd(this, '${inst.cmd.replace(/'/g,"\\'")}')">Kopyala</button>
+          </div>
+          <div class="cmd-line">
+            <span class="prompt">$ </span><span class="cmd-text">${escHtml(inst.cmd)}</span>
+          </div>
+        </div>
+      `).join('');
+
+      const usageHtml = tool.usage.map(u => `
+        <div class="usage-item">
+          <div class="usage-desc">${u.desc}</div>
+          <div class="usage-cmd">${escHtml(u.cmd)}</div>
+        </div>
+      `).join('');
+
+      card.innerHTML = `
+        <div class="card-header" onclick="toggleCard('${tool.id}')">
+          <div class="card-icon">${tool.icon}</div>
+          <div class="card-meta">
+            <div class="card-name">${tool.name}</div>
+            <div class="card-tagline">${tool.tagline}</div>
+          </div>
+          <div class="card-badges">
+            <span class="badge badge-cat" style="color:${info.color}; border-color:${info.color}66">${cat.toUpperCase()}</span>
+            <span class="badge ${riskBadge}">RISK:${riskLabel}</span>
+          </div>
+          <span class="expand-arrow">▼</span>
+        </div>
+        <div class="card-body">
+          <div class="card-desc">${tool.desc}</div>
+          ${installHtml}
+          <div style="font-size:9px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin: 12px 0 8px;">İstifadə Nümunələri</div>
+          <div class="usage-list">${usageHtml}</div>
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            <button class="copy-btn" style="border:1px solid var(--border2); padding:5px 10px; border-radius:4px;" onclick="showTerminal('${tool.id}')">▶ Terminal Demo</button>
+          </div>
+          <div class="install-bar-wrap"><div class="install-bar"></div></div>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+    container.appendChild(grid);
+
+    // Sidebar dot
+    const dot = document.createElement('div');
+    dot.className = 'sidebar-dot';
+    dot.title = info.label;
+    dot.style.background = info.color + '44';
+    dot.onclick = () => document.getElementById('sec-' + cat).scrollIntoView({ behavior: 'smooth' });
+    sidebar.appendChild(dot);
+  });
+
+  updateShownCount();
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function toggleCard(id) {
+  const card = document.getElementById('tool-' + id);
+  card.classList.toggle('expanded');
+}
+
+function filterTools(cat) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === cat));
+  applyFilters();
+}
+
+function searchTools(q) {
+  currentSearch = q.toLowerCase();
+  applyFilters();
+}
+
+function applyFilters() {
+  let shown = 0;
+  tools.forEach(tool => {
+    const card = document.getElementById('tool-' + tool.id);
+    if (!card) return;
+    const catMatch = currentFilter === 'all' || tool.cat === currentFilter;
+    const searchMatch = !currentSearch || tool.name.toLowerCase().includes(currentSearch) || tool.tagline.toLowerCase().includes(currentSearch) || tool.cat.includes(currentSearch);
+    const show = catMatch && searchMatch;
+    card.classList.toggle('hidden', !show);
+    if (show) shown++;
+  });
+
+  // Hide section headers if no tools in section
+  Object.keys(catInfo).forEach(cat => {
+    const sec = document.getElementById('sec-' + cat);
+    const grid = document.getElementById('grid-' + cat);
+    if (!sec || !grid) return;
+    const hasVisible = grid.querySelector('.tool-card:not(.hidden)');
+    sec.style.display = hasVisible ? '' : 'none';
+    grid.style.display = hasVisible ? '' : 'none';
+  });
+
+  document.getElementById('shown-count').textContent = shown;
+}
+
+function updateShownCount() {
+  document.getElementById('shown-count').textContent = tools.length;
+}
+
+function copyCmd(btn, cmd) {
+  navigator.clipboard.writeText(cmd).then(() => {
+    btn.textContent = '✓ Kopyalandı';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Kopyala'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function showTerminal(id) {
+  const tool = tools.find(t => t.id === id);
+  if (!tool) return;
+
+  document.getElementById('terminal-title').textContent = `${tool.name} — terminal demo`;
+  const body = document.getElementById('terminal-body');
+  body.innerHTML = '';
+
+  const modal = document.getElementById('terminal-modal');
+  modal.classList.add('open');
+
+  let delay = 0;
+  tool.demo.forEach((line, i) => {
+    setTimeout(() => {
+      const div = document.createElement('div');
+      div.className = 't-line';
+
+      if (line.prompt) {
+        div.innerHTML = `<span class="t-green" style="flex-shrink:0">${escHtml(line.prompt)}</span><span class="t-${line.t || 'white'}">&nbsp;${escHtml(line.text)}</span>`;
+      } else {
+        div.innerHTML = `<span class="t-${line.t || 'white'}">${escHtml(line.text || '')}</span>`;
+      }
+
+      body.appendChild(div);
+
+      // Cursor on last line
+      if (i === tool.demo.length - 1) {
+        const cur = document.createElement('div');
+        cur.className = 't-line';
+        cur.innerHTML = `<span class="t-green" style="flex-shrink:0">user@fedora ~$</span>&nbsp;<span class="t-cursor"></span>`;
+        body.appendChild(cur);
+      }
+
+      body.scrollTop = body.scrollHeight;
+    }, delay);
+    delay += 120 + Math.random() * 80;
+  });
+}
+
+function closeTerminal(e) {
+  if (e.target === document.getElementById('terminal-modal')) {
+    document.getElementById('terminal-modal').classList.remove('open');
+  }
+}
+
+// ── BOOT SEQUENCE ──
+window.addEventListener('load', () => {
+  buildTools();
+
+  setTimeout(() => {
+    const boot = document.getElementById('boot-screen');
+    boot.style.transition = 'opacity 0.6s';
+    boot.style.opacity = '0';
+    setTimeout(() => {
+      boot.style.display = 'none';
+      const app = document.getElementById('main-app');
+      app.style.opacity = '1';
+    }, 600);
+  }, 2200);
+});
+</script>
+</body>
+</html>
