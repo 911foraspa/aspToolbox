@@ -1,5 +1,6 @@
 # aspToolbox
 azerbaycanca tool box! ingilis dili yaxinda gelecek
+indiliy sadece fedora qurulum indexi var yaxinda windows linux ucunde destey gelecey
 
 # Fedora/Linux
 chmod +x run.sh
