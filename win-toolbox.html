@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WIN//HACK — Windows Toolbox</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050510;
+  --surface: #08081a;
+  --card: #0c0c20;
+  --border: #1a1a3a;
+  --border2: #252550;
+  --blue: #00aaff;
+  --blue2: #0055cc;
+  --cyan: #00ffff;
+  --win: #0078d4;
+  --win2: #50e3ff;
+  --red: #ff3355;
+  --yellow: #ffcc00;
+  --green: #00ff88;
+  --muted: #333366;
+  --text: #c0c8e8;
+  --glow: rgba(0,170,255,0.12);
+  --glow2: rgba(0,170,255,0.06);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Share Tech Mono', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* Animated grid */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,170,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,170,255,0.04) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: 0;
+  animation: gridShift 20s linear infinite;
+}
+
+@keyframes gridShift {
+  from { background-position: 0 0; }
+  to { background-position: 50px 50px; }
+}
+
+/* Scanlines */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.03) 3px, rgba(0,0,0,0.03) 4px);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.app { position: relative; z-index: 10; max-width: 1200px; margin: 0 auto; padding: 0 28px 80px; }
+
+/* ── HEADER ── */
+.header {
+  padding: 28px 0 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+  position: relative;
+}
+
+.win-logo {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 8px;
+}
+
+.win-flag {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  width: 36px;
+  height: 36px;
+}
+
+.win-flag-sq {
+  border-radius: 2px;
+  animation: winFlagPulse 3s ease-in-out infinite;
+}
+
+.win-flag-sq:nth-child(1) { background: var(--win); }
+.win-flag-sq:nth-child(2) { background: var(--win); animation-delay: 0.2s; }
+.win-flag-sq:nth-child(3) { background: var(--win); animation-delay: 0.4s; }
+.win-flag-sq:nth-child(4) { background: var(--win); animation-delay: 0.6s; }
+
+@keyframes winFlagPulse {
+  0%,100% { opacity: 0.7; }
+  50% { opacity: 1; box-shadow: 0 0 8px var(--win); }
+}
+
+.logo-text {
+  font-family: 'Orbitron', monospace;
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--blue);
+  text-shadow: 0 0 30px rgba(0,170,255,0.5);
+  letter-spacing: 2px;
+}
+
+.logo-text span { color: var(--win2); }
+
+.header-sub {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.header-meta {
+  position: absolute;
+  right: 0; top: 28px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.meta-item { text-align: right; }
+.meta-val { font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 700; color: var(--blue); }
+.meta-label { font-size: 9px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+
+/* ── FILTERS ── */
+.filters {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.f-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-right: 4px; }
+
+.f-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  color: var(--muted);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.f-btn:hover { color: var(--blue); border-color: var(--blue); }
+.f-btn.active { color: var(--win2); border-color: var(--win2); background: rgba(0,170,255,0.08); }
+
+.f-search {
+  margin-left: auto;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 5px 12px;
+  color: var(--text);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  width: 180px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.f-search:focus { border-color: var(--blue); }
+.f-search::placeholder { color: var(--muted); }
+
+/* ── SECTION HEADER ── */
+.sec-hdr {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 12px;
+}
+
+.sec-hdr-line { flex: 1; height: 1px; background: var(--border); }
+.sec-hdr-text { font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; white-space: nowrap; }
+.sec-hdr-count { font-size: 9px; padding: 2px 7px; border-radius: 2px; color: var(--blue); border: 1px solid var(--blue2); }
+
+/* ── TOOLS GRID ── */
+.tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2px; }
+
+/* ── TOOL CARD ── */
+.tool-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tool-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--cc, var(--blue));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s;
+}
+
+.tool-card:hover::after, .tool-card.expanded::after { transform: scaleX(1); }
+.tool-card:hover, .tool-card.expanded { background: var(--surface); border-color: var(--border2); }
+.tool-card.hidden { display: none; }
+
+.tc-head {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tc-icon {
+  width: 34px; height: 34px;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  border: 1px solid var(--border2);
+  background: rgba(0,170,255,0.06);
+  flex-shrink: 0;
+}
+
+.tc-info { flex: 1; min-width: 0; }
+.tc-name { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tc-tag { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+.tc-badges { display: flex; gap: 5px; flex-shrink: 0; }
+
+.badge {
+  font-size: 8px; letter-spacing: 1px; text-transform: uppercase;
+  padding: 2px 5px; border-radius: 2px; border: 1px solid;
+}
+
+.b-cat { color: var(--cc, var(--blue)); border-color: var(--cc, var(--blue)); background: rgba(0,0,0,0.3); }
+.b-free { color: var(--green); border-color: var(--green); background: rgba(0,255,136,0.06); }
+.b-paid { color: var(--yellow); border-color: var(--yellow); background: rgba(255,204,0,0.06); }
+.b-risk-l { color: var(--green); border-color: var(--green); background: rgba(0,255,136,0.06); }
+.b-risk-m { color: var(--yellow); border-color: var(--yellow); background: rgba(255,204,0,0.06); }
+.b-risk-h { color: var(--red); border-color: var(--red); background: rgba(255,51,85,0.06); }
+
+.tc-arrow { color: var(--muted); font-size: 10px; transition: transform 0.3s; flex-shrink: 0; }
+.tool-card.expanded .tc-arrow { transform: rotate(180deg); color: var(--win2); }
+
+/* ── CARD BODY ── */
+.tc-body { display: none; padding: 0 16px 16px; border-top: 1px solid var(--border); }
+.tool-card.expanded .tc-body { display: block; }
+
+.tc-desc { font-size: 11px; color: var(--muted); line-height: 1.7; margin: 12px 0 14px; }
+
+/* PS/CMD blocks */
+.cmd-block {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.cmd-hdr {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.3);
+}
+
+.cmd-hdr-left { display: flex; align-items: center; gap: 8px; }
+.cmd-hdr-dot { width: 8px; height: 8px; border-radius: 50%; }
+.cmd-hdr-dot.r { background: #ff5f56; }
+.cmd-hdr-dot.y { background: #ffbd2e; }
+.cmd-hdr-dot.g { background: #27c93f; }
+.cmd-type { font-size: 8px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+
+.copy-btn {
+  background: transparent; border: none;
+  color: var(--muted); font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; cursor: pointer; padding: 2px 6px;
+  border-radius: 2px; transition: all 0.2s; letter-spacing: 1px;
+}
+.copy-btn:hover { color: var(--win2); background: rgba(0,170,255,0.08); }
+.copy-btn.ok { color: var(--green); }
+
+.cmd-body {
+  padding: 10px 12px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.ps-prompt { color: var(--blue2); }
+.ps-cmd { color: var(--win2); }
+.cmd-prompt { color: #888; }
+.cmd-txt { color: var(--yellow); }
+
+/* Download section */
+.dl-section {
+  background: rgba(0,120,212,0.08);
+  border: 1px solid rgba(0,120,212,0.25);
+  border-radius: 4px;
+  padding: 12px 14px;
+  margin: 10px 0;
+}
+
+.dl-title { font-size: 9px; color: var(--win); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+
+.dl-link {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--blue);
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color 0.2s;
+  border-bottom: 1px solid transparent;
+}
+
+.dl-link:hover { color: var(--win2); }
+.dl-link-icon { font-size: 12px; }
+
+/* Usage */
+.usage-grid { display: grid; grid-template-columns: 1fr; gap: 5px; margin-top: 10px; }
+
+.usage-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 7px 10px;
+}
+
+.usage-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+.usage-cmd { font-size: 10px; color: var(--cyan); word-break: break-all; }
+
+/* ── BOTTOM BAR ── */
+.bottom-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(5,5,16,0.95);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  padding: 10px 32px;
+  display: flex; gap: 20px; align-items: center;
+  z-index: 100;
+  font-size: 10px;
+}
+
+.bb-stat { color: var(--muted); display: flex; gap: 6px; }
+.bb-stat span { color: var(--blue); }
+.bb-warn { color: var(--red); font-size: 9px; margin-left: auto; }
+
+/* ── ANIMATIONS ── */
+@keyframes cardIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.tool-card { animation: cardIn 0.3s ease backwards; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="win-logo">
+      <div class="win-flag">
+        <div class="win-flag-sq"></div><div class="win-flag-sq"></div>
+        <div class="win-flag-sq"></div><div class="win-flag-sq"></div>
+      </div>
+      <div>
+        <div class="logo-text">WIN<span>//</span>HACK</div>
+        <div class="header-sub">Windows Hacking Toolbox // PowerShell &amp; GUI Edition</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="meta-item"><div class="meta-val" id="tool-count">18</div><div class="meta-label">Tools</div></div>
+      <div class="meta-item"><div class="meta-val" style="color:var(--green)">FREE</div><div class="meta-label">Mostly Free</div></div>
+      <div class="meta-item"><div class="meta-val" style="color:var(--win)">WIN</div><div class="meta-label">Platform</div></div>
+    </div>
+  </header>
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <span class="f-label">FILTER:</span>
+    <button class="f-btn active" data-f="all" onclick="filt('all')">All</button>
+    <button class="f-btn" data-f="network" onclick="filt('network')">Network</button>
+    <button class="f-btn" data-f="osint" onclick="filt('osint')">OSINT</button>
+    <button class="f-btn" data-f="password" onclick="filt('password')">Password</button>
+    <button class="f-btn" data-f="pentest" onclick="filt('pentest')">Pentest</button>
+    <button class="f-btn" data-f="web" onclick="filt('web')">Web</button>
+    <button class="f-btn" data-f="forensics" onclick="filt('forensics')">Forensics</button>
+    <button class="f-btn" data-f="recon" onclick="filt('recon')">Recon</button>
+    <input class="f-search" type="text" placeholder="> search..." oninput="search(this.value)">
+  </div>
+
+  <!-- TOOLS CONTAINER -->
+  <div id="container"></div>
+
+</div>
+
+<div class="bottom-bar">
+  <div class="bb-stat">Showing: <span id="shown">18</span> tools</div>
+  <div class="bb-stat">Click card → <span>expand details</span></div>
+  <div class="bb-warn">⚠ USE ONLY ON AUTHORIZED SYSTEMS</div>
+</div>
+
+<script>
+const CATS = {
+  network:   { label: 'Network & Scanning',   icon: '🌐', color: '#00aaff' },
+  osint:     { label: 'OSINT & Recon',         icon: '🔍', color: '#a78bfa' },
+  password:  { label: 'Password & Hash',       icon: '🔐', color: '#ff8c00' },
+  pentest:   { label: 'Pentest Frameworks',    icon: '💀', color: '#ff3355' },
+  web:       { label: 'Web Application',       icon: '🌍', color: '#ffcc00' },
+  forensics: { label: 'Forensics & Memory',    icon: '🧠', color: '#f06292' },
+  recon:     { label: 'Recon & Enumeration',   icon: '📡', color: '#00ff88' },
+};
+
+const TOOLS = [
+  // NETWORK
+  {
+    id:'nmap-win', name:'Nmap for Windows', cat:'network', icon:'🌐',
+    tag:'Port scanner & network mapper', risk:'med', price:'free',
+    desc:'Windowsda çalışan Nmap. GUI versiyası (Zenmap) ilə gəlir. CMD ya da PowerShell-dən birbaşa işlədilir.',
+    dl:[{ label:'nmap.org official download', url:'https://nmap.org/download#windows' }],
+    install:[{ type:'winget', prompt:'PS>', cmd:'winget install -e --id Insecure.Nmap' }],
+    usage:[
+      { label:'Sürətli skan',    cmd:'nmap -T4 -F 192.168.1.0/24' },
+      { label:'OS fingerprint',  cmd:'nmap -sV -O 192.168.1.1' },
+      { label:'Vuln scripts',    cmd:'nmap --script vuln 192.168.1.1' },
+    ]
+  },
+  {
+    id:'wireshark-win', name:'Wireshark', cat:'network', icon:'🦈',
+    tag:'Network protocol analyzer', risk:'med', price:'free',
+    desc:'Dünyanın ən məşhur paket analizatoru. GUI ilə tam funksional. WinPcap/Npcap ilə qurulur.',
+    dl:[{ label:'wireshark.org official', url:'https://www.wireshark.org/download.html' }],
+    install:[{ type:'winget', prompt:'PS>', cmd:'winget install -e --id WiresharkFoundation.Wireshark' }],
+    usage:[
+      { label:'GUI başlat',       cmd:'Start-Process wireshark' },
+      { label:'CLI (tshark)',     cmd:'tshark -i "Ethernet" -w capture.pcap' },
+      { label:'HTTP filtrə',      cmd:'tshark -r cap.pcap -Y "http.request"' },
+    ]
+  },
+  {
+    id:'angry-ip', name:'Angry IP Scanner', cat:'network', icon:'⚡',
+    tag:'Fast IP & port scanner with GUI', risk:'low', price:'free',
+    desc:'Cross-platform, GUI-based network scanner. Windows\'da çox populyardır. CSV/TXT export edir.',
+    dl:[{ label:'angryip.org download', url:'https://angryip.org/download/' }],
+    install:[{ type:'winget', prompt:'PS>', cmd:'winget install -e --id angryziber.AngryIPScanner' }],
+    usage:[
+      { label:'GUI ilə işlət', cmd:'Start-Process ipscan' },
+      { label:'CLI skan',      cmd:'ipscan -f:csv -o results.csv 192.168.1.0/24' },
+    ]
+  },
+  {
+    id:'netcat-win', name:'Ncat (Nmap)', cat:'network', icon:'🔌',
+    tag:'TCP/UDP network swiss-army knife', risk:'high', price:'free',
+    desc:'Nmap ilə birlikdə gəlir. Port dinləmə, banner grabbing, reverse shell üçün istifadə olunur.',
+    dl:[{ label:'Nmap ilə birlikdə', url:'https://nmap.org/download#windows' }],
+    install:[{ type:'cmd', prompt:'>', cmd:'winget install -e --id Insecure.Nmap' }],
+    usage:[
+      { label:'Port dinlə',       cmd:'ncat -lvp 4444' },
+      { label:'Bağlan',           cmd:'ncat 192.168.1.1 4444' },
+      { label:'Banner grab',      cmd:'ncat 192.168.1.1 80' },
+    ]
+  },
+
+  // OSINT
+  {
+    id:'maltego', name:'Maltego CE', cat:'osint', icon:'🕸',
+    tag:'Visual link analysis & OSINT', risk:'low', price:'free',
+    desc:'Qrafik OSINT platforması. Domain, email, şəxs, IP-lər arasında əlaqələri görsel göstərir. Community versiyası pulsuzdur.',
+    dl:[{ label:'maltego.com official', url:'https://www.maltego.com/downloads/' }],
+    install:[{ type:'manual', prompt:'>', cmd:'# maltego.com-dan installer yüklə, qeydiyyat tələb olunur' }],
+    usage:[
+      { label:'GUI başlat', cmd:'Start-Process maltego' },
+      { label:'Domain transform', cmd:'# Run Transform → DNS from Domain' },
+    ]
+  },
+  {
+    id:'exiftool-win', name:'ExifTool', cat:'osint', icon:'🖼',
+    tag:'File metadata extractor', risk:'low', price:'free',
+    desc:'Şəkillərdən, PDF-lərdən, sənədlərdən metadata oxuyur. GPS koordinatları, cihaz məlumatları, tarix.',
+    dl:[{ label:'exiftool.org download', url:'https://exiftool.org/' }],
+    install:[{ type:'winget', prompt:'PS>', cmd:'winget install -e --id OliverBetz.ExifTool' }],
+    usage:[
+      { label:'Bütün metadata',   cmd:'exiftool image.jpg' },
+      { label:'GPS koordinatları',cmd:'exiftool -gpslatitude -gpslongitude photo.jpg' },
+      { label:'Metadata sil',     cmd:'exiftool -all= image.jpg' },
+    ]
+  },
+  {
+    id:'shodan-cli', name:'Shodan CLI', cat:'osint', icon:'👁',
+    tag:'Internet-connected device search', risk:'low', price:'free',
+    desc:'Shodan-ın command-line interfeysi. İnternetə bağlı cihazları, portları, servisləri axtarır.',
+    dl:[{ label:'pip install shodan', url:'https://cli.shodan.io/' }],
+    install:[{ type:'cmd', prompt:'PS>', cmd:'pip install shodan' }],
+    usage:[
+      { label:'Axtarış',       cmd:'shodan search "apache"' },
+      { label:'IP məlumatları', cmd:'shodan host 8.8.8.8' },
+      { label:'Stats',          cmd:'shodan stats "port:22"' },
+    ]
+  },
+
+  // PASSWORD
+  {
+    id:'hashcat-win', name:'Hashcat', cat:'password', icon:'⚡',
+    tag:'GPU-accelerated hash cracker', risk:'high', price:'free',
+    desc:'Windows-da GPU ilə hash qırma. CUDA (NVIDIA) ya da OpenCL (AMD) dəstəklənir. Rockyou.txt lazımdır.',
+    dl:[{ label:'hashcat.net official', url:'https://hashcat.net/hashcat/' }],
+    install:[{ type:'manual', prompt:'>', cmd:'# hashcat.net-dən zip yüklə, PATH-a əlavə et' }],
+    usage:[
+      { label:'MD5 crack',    cmd:'hashcat.exe -m 0 -a 0 hash.txt rockyou.txt' },
+      { label:'NTLM crack',   cmd:'hashcat.exe -m 1000 -a 0 hash.txt rockyou.txt' },
+      { label:'Nəticə göstər',cmd:'hashcat.exe -m 0 hash.txt --show' },
+    ]
+  },
+  {
+    id:'john-win', name:'John the Ripper (Win)', cat:'password', icon:'🗡',
+    tag:'Classic password cracker', risk:'high', price:'free',
+    desc:'Windows üçün John the Ripper. ZIP, PDF, Office sənədlərinin şifrəsini qıra bilir.',
+    dl:[{ label:'openwall.com download', url:'https://www.openwall.com/john/' }],
+    install:[{ type:'manual', prompt:'>', cmd:'# openwall.com-dan Win binary yüklə' }],
+    usage:[
+      { label:'Hash qır',     cmd:'john.exe --wordlist=rockyou.txt hash.txt' },
+      { label:'ZIP şifrəsi',  cmd:'zip2john.exe file.zip > h.txt && john.exe h.txt' },
+      { label:'Nəticə',       cmd:'john.exe --show hash.txt' },
+    ]
+  },
+  {
+    id:'mimikatz', name:'Mimikatz', cat:'password', icon:'🐱',
+    tag:'Windows credential extraction', risk:'high', price:'free',
+    desc:'Windows-dan şifrələri, hashləri, Kerberos ticketlarını çıxaran ən məşhur post-exploitation aləti.',
+    dl:[{ label:'github.com/gentilkiwi/mimikatz', url:'https://github.com/gentilkiwi/mimikatz/releases' }],
+    install:[{ type:'manual', prompt:'>', cmd:'# GitHub releases-dən yüklə, AV-i deaktiv et (test env)' }],
+    usage:[
+      { label:'Şifrələri dump et',  cmd:'sekurlsa::logonpasswords' },
+      { label:'NTLM hashlar',       cmd:'lsadump::sam' },
+      { label:'Kerberos ticketlar', cmd:'sekurlsa::tickets' },
+    ]
+  },
+
+  // PENTEST
+  {
+    id:'metasploit-win', name:'Metasploit Framework', cat:'pentest', icon:'💀',
+    tag:'#1 penetration testing framework', risk:'high', price:'free',
+    desc:'Metasploit Windows-da da işləyir. Installer ilə qurulur. msfconsole CMD-dən işlədilir.',
+    dl:[{ label:'metasploit.com download', url:'https://www.metasploit.com/download' }],
+    install:[{ type:'manual', prompt:'>', cmd:'# metasploit.com-dan Windows installer yüklə' }],
+    usage:[
+      { label:'Konsol başlat',  cmd:'msfconsole.bat' },
+      { label:'Exploit axtar',  cmd:'search type:exploit platform:windows' },
+      { label:'Meterpreter',    cmd:'use exploit/multi/handler' },
+    ]
+  },
+  {
+    id:'cobalt-strike', name:'Burp Suite Community', cat:'pentest', icon:'🕷',
+    tag:'Web app security testing', risk:'med', price:'free',
+    desc:'Web application pentest-in standart aləti. HTTP proxy, repeater, intruder. Community versiyası tam funksional.',
+    dl:[{ label:'portswigger.net download', url:'https://portswigger.net/burp/communitydownload' }],
+    install:[{ type:'manual', prompt:'>', cmd:'# portswigger.net-dən installer yüklə' }],
+    usage:[
+      { label:'Proxy qur',      cmd:'# Firefox: 127.0.0.1:8080 → Burp intercept' },
+      { label:'Repeater',       cmd:'# Ctrl+R → Repeater tab' },
+      { label:'Intruder',       cmd:'# Ctrl+I → Intruder → payload positions' },
+    ]
+  },
+
+  // WEB
+  {
+    id:'sqlmap-win', name:'sqlmap', cat:'web', icon:'💉',
+    tag:'Automatic SQL injection tool', risk:'high', price:'free',
+    desc:'SQL injection aşkarlamaq və exploit etmək üçün. Python ilə işləyir. Bütün əsas DB-lər dəstəklənir.',
+    dl:[{ label:'sqlmap.org', url:'https://sqlmap.org/' }],
+    install:[{ type:'cmd', prompt:'PS>', cmd:'pip install sqlmap' }],
+    usage:[
+      { label:'Basic injection',   cmd:'python sqlmap.py -u "http://site.com/page?id=1" --dbs' },
+      { label:'Dump table',        cmd:'python sqlmap.py -u "http://..." -D dbname -T users --dump' },
+      { label:'Forms',             cmd:'python sqlmap.py -u "http://site.com/login" --forms' },
+    ]
+  },
+  {
+    id:'nikto', name:'Nikto', cat:'web', icon:'🔎',
+    tag:'Web server vulnerability scanner', risk:'med', price:'free',
+    desc:'Web serverlərindəki zəiflikləri, köhnəlmiş komponentləri, yanlış konfiqurasiyanı tapır.',
+    dl:[{ label:'GitHub releases', url:'https://github.com/sullo/nikto' }],
+    install:[{ type:'cmd', prompt:'PS>', cmd:'git clone https://github.com/sullo/nikto.git' }],
+    usage:[
+      { label:'Skan',          cmd:'perl nikto.pl -h https://target.com' },
+      { label:'SSL skan',      cmd:'perl nikto.pl -h https://target.com -ssl' },
+      { label:'Output saxla',  cmd:'perl nikto.pl -h target.com -o out.html -Format html' },
+    ]
+  },
+
+  // FORENSICS
+  {
+    id:'volatility-win', name:'Volatility3', cat:'forensics', icon:'🧠',
+    tag:'Memory forensics framework', risk:'low', price:'free',
+    desc:'RAM dump analizi. Windows memory-sindən proses, şəbəkə, şifrə, registry məlumatları çıxarılır.',
+    dl:[{ label:'GitHub volatilityfoundation', url:'https://github.com/volatilityfoundation/volatility3' }],
+    install:[{ type:'cmd', prompt:'PS>', cmd:'pip install volatility3' }],
+    usage:[
+      { label:'Proses siyahısı',   cmd:'python vol.py -f mem.dmp windows.pslist' },
+      { label:'Şəbəkə bağlantıları',cmd:'python vol.py -f mem.dmp windows.netstat' },
+      { label:'Registry dump',     cmd:'python vol.py -f mem.dmp windows.registry.hivelist' },
+    ]
+  },
+  {
+    id:'autopsy', name:'Autopsy', cat:'forensics', icon:'🔬',
+    tag:'Digital forensics platform', risk:'low', price:'free',
+    desc:'FBI/polisiya tərəfindən istifadə olunan açıq mənbəli forensics platforması. Disk analizi, timeline, artefaktlar.',
+    dl:[{ label:'sleuthkit.org download', url:'https://www.autopsy.com/download/' }],
+    install:[{ type:'manual', prompt:'>', cmd:'# sleuthkit.org-dan installer yüklə' }],
+    usage:[
+      { label:'GUI başlat',     cmd:'Start-Process autopsy64.exe' },
+      { label:'New case',       cmd:'# File → New Case → Add disk image' },
+    ]
+  },
+
+  // RECON
+  {
+    id:'reconng', name:'Recon-ng', cat:'recon', icon:'📡',
+    tag:'Web reconnaissance framework', risk:'low', price:'free',
+    desc:'Modular recon framework. Domain, email, şəxs məlumatları toplayır. Metasploit-ə bənzər interfeys.',
+    dl:[{ label:'GitHub lanmaster53', url:'https://github.com/lanmaster53/recon-ng' }],
+    install:[{ type:'cmd', prompt:'PS>', cmd:'git clone https://github.com/lanmaster53/recon-ng.git && pip install -r requirements.txt' }],
+    usage:[
+      { label:'Başlat',         cmd:'python recon-ng' },
+      { label:'Modul axtar',    cmd:'marketplace search whois' },
+      { label:'Modul yüklə',    cmd:'marketplace install recon/domains-hosts/google_site_web' },
+    ]
+  },
+  {
+    id:'spiderfoot', name:'SpiderFoot', cat:'recon', icon:'🕷',
+    tag:'Automated OSINT & threat intel', risk:'low', price:'free',
+    desc:'200+ modul ilə avtomatik OSINT. Web UI ilə gəlir. Domain, IP, email üzrə tam recon edir.',
+    dl:[{ label:'spiderfoot.net', url:'https://www.spiderfoot.net/' }],
+    install:[{ type:'cmd', prompt:'PS>', cmd:'pip install spiderfoot' }],
+    usage:[
+      { label:'Web UI başlat',   cmd:'python sf.py -l 127.0.0.1:5001' },
+      { label:'Brauzerə get',    cmd:'Start-Process "http://127.0.0.1:5001"' },
+    ]
+  },
+];
+
+let curfilt = 'all', cursearch = '';
+
+function build() {
+  const cont = document.getElementById('container');
+  cont.innerHTML = '';
+
+  const catOrder = ['network','osint','password','pentest','web','forensics','recon'];
+
+  catOrder.forEach((cat, ci) => {
+    const catTools = TOOLS.filter(t => t.cat === cat);
+    if (!catTools.length) return;
+    const info = CATS[cat];
+
+    const sh = document.createElement('div');
+    sh.className = 'sec-hdr';
+    sh.innerHTML = `
+      <div class="sec-hdr-line"></div>
+      <span class="sec-hdr-text" style="color:${info.color}">${info.icon} ${info.label}</span>
+      <span class="sec-hdr-count" style="color:${info.color}; border-color:${info.color}">${catTools.length}</span>
+      <div class="sec-hdr-line"></div>
+    `;
+    sh.id = 'sec-' + cat;
+    cont.appendChild(sh);
+
+    const grid = document.createElement('div');
+    grid.className = 'tools-grid';
+    grid.id = 'grid-' + cat;
+
+    catTools.forEach((t, ti) => {
+      const riskCls = { low:'b-risk-l', med:'b-risk-m', high:'b-risk-h' }[t.risk];
+      const riskLbl = { low:'LOW', med:'MED', high:'HIGH' }[t.risk];
+      const priceCls = t.price === 'free' ? 'b-free' : 'b-paid';
+
+      const installHtml = t.install.map(inst => {
+        const pClr = inst.type === 'winget' ? '#0078d4' : inst.type === 'cmd' ? '#888' : '#555';
+        const cClr = inst.type === 'winget' ? '#50e3ff' : inst.type === 'cmd' ? '#ffd700' : '#aaa';
+        const safeCmd = inst.cmd.replace(/'/g, "&#39;");
+        return `
+          <div class="cmd-block">
+            <div class="cmd-hdr">
+              <div class="cmd-hdr-left">
+                <div class="cmd-hdr-dot r"></div>
+                <div class="cmd-hdr-dot y"></div>
+                <div class="cmd-hdr-dot g"></div>
+                <span class="cmd-type">${inst.type === 'winget' ? 'PowerShell' : inst.type === 'manual' ? 'Manual' : 'CMD'}</span>
+              </div>
+              <button class="copy-btn" onclick="copyTxt(this, '${safeCmd}')">Copy</button>
+            </div>
+            <div class="cmd-body">
+              <span style="color:${pClr}">${inst.prompt} </span><span style="color:${cClr}">${inst.cmd}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const dlHtml = t.dl.map(d => `
+        <a class="dl-link" href="${d.url}" target="_blank">
+          <span class="dl-link-icon">⬇</span>${d.label}
+        </a>
+      `).join('');
+
+      const usageHtml = t.usage.map(u => `
+        <div class="usage-item">
+          <div class="usage-label">${u.label}</div>
+          <div class="usage-cmd">${u.cmd}</div>
+        </div>
+      `).join('');
+
+      const card = document.createElement('div');
+      card.className = 'tool-card';
+      card.id = 'tc-' + t.id;
+      card.dataset.cat = t.cat;
+      card.dataset.name = t.name.toLowerCase();
+      card.style.setProperty('--cc', info.color);
+      card.style.animationDelay = (ci * 0.08 + ti * 0.04) + 's';
+      card.innerHTML = `
+        <div class="tc-head" onclick="toggle('${t.id}')">
+          <div class="tc-icon">${t.icon}</div>
+          <div class="tc-info">
+            <div class="tc-name">${t.name}</div>
+            <div class="tc-tag">${t.tag}</div>
+          </div>
+          <div class="tc-badges">
+            <span class="badge b-cat" style="color:${info.color}; border-color:${info.color}66">${cat.toUpperCase()}</span>
+            <span class="badge ${priceCls}">${t.price.toUpperCase()}</span>
+            <span class="badge ${riskCls}">RISK:${riskLbl}</span>
+          </div>
+          <span class="tc-arrow">▼</span>
+        </div>
+        <div class="tc-body">
+          <div class="tc-desc">${t.desc}</div>
+          ${installHtml}
+          <div class="dl-section">
+            <div class="dl-title">⬇ Download Links</div>
+            ${dlHtml}
+          </div>
+          <div style="font-size:9px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-top:10px; margin-bottom:6px;">Usage Examples</div>
+          <div class="usage-grid">${usageHtml}</div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+    cont.appendChild(grid);
+  });
+
+  document.getElementById('tool-count').textContent = TOOLS.length;
+  document.getElementById('shown').textContent = TOOLS.length;
+}
+
+function toggle(id) {
+  document.getElementById('tc-' + id)?.classList.toggle('expanded');
+}
+
+function filt(cat) {
+  curfilt = cat;
+  document.querySelectorAll('.f-btn').forEach(b => b.classList.toggle('active', b.dataset.f === cat));
+  apply();
+}
+
+function search(q) { cursearch = q.toLowerCase(); apply(); }
+
+function apply() {
+  let n = 0;
+  TOOLS.forEach(t => {
+    const el = document.getElementById('tc-' + t.id);
+    if (!el) return;
+    const ok = (curfilt === 'all' || t.cat === curfilt) &&
+               (!cursearch || t.name.toLowerCase().includes(cursearch) || t.tag.toLowerCase().includes(cursearch));
+    el.classList.toggle('hidden', !ok);
+    if (ok) n++;
+  });
+  document.getElementById('shown').textContent = n;
+
+  Object.keys(CATS).forEach(cat => {
+    const sec = document.getElementById('sec-' + cat);
+    const grid = document.getElementById('grid-' + cat);
+    if (!sec || !grid) return;
+    const vis = grid.querySelector('.tool-card:not(.hidden)');
+    sec.style.display = vis ? '' : 'none';
+    grid.style.display = vis ? '' : 'none';
+  });
+}
+
+function copyTxt(btn, txt) {
+  navigator.clipboard.writeText(txt).then(() => {
+    btn.textContent = '✓ OK';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
+  });
+}
+
+build();
+</script>
+</body>
+</html>
