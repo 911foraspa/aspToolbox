@@ -1,6 +1,6 @@
 @echo off
-echo [*] Aciliyor: fedora-toolbox.html
+echo [*] Aciliyor: win-toolbox.html
 
-start "" "fedora-toolbox.html"
+start "" "win-toolbox.html"
 
 echo [+] Tarayici acildi.
